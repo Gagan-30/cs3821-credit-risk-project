@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE configurations
+.idea/
+.vscode/
+*.swp
+
+# Profiling & output artifacts
+*.prof
+*.csv
+*.log
