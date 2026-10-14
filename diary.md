@@ -12,3 +12,4 @@ Couple sentences.
 - October 6th - Finished writing project plan before Meeting
 - October 7th - Meeting went well. Told to switch from Java to Python.
 - October 8th - Rewritten Project plan and submitted.
+- October 14th - Start code
