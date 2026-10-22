@@ -63,3 +63,50 @@ class MinMaxScaler(BasePreprocessor):
             scaled_dataset.add(Instance(features=scaled_feats, label=inst.label, meta=inst.meta))
 
         return scaled_dataset
+
+
+class ZScoreStandardizer(BasePreprocessor):
+    """Standardizes features to zero mean and unit variance (std = 1)."""
+
+    def __init__(self):
+        super().__init__()
+        self.means: List[float] = []
+        self.stds: List[float] = []
+
+    def fit(self, dataset: Dataset) -> None:
+        if len(dataset) == 0:
+            raise ValueError("Cannot fit on an empty Dataset.")
+
+        num_instances = len(dataset)
+        num_features = dataset.num_features
+
+        # Calculate means
+        sums = [0.0] * num_features
+        for inst in dataset:
+            for i, val in enumerate(inst.features):
+                sums[i] += val
+        self.means = [s / num_instances for s in sums]
+
+        # Calculate standard deviations
+        var_sums = [0.0] * num_features
+        for inst in dataset:
+            for i, val in enumerate(inst.features):
+                var_sums[i] += (val - self.means[i]) ** 2
+        
+        self.stds = [math.sqrt(v / num_instances) for v in var_sums]
+        self.is_fitted = True
+
+    def transform(self, dataset: Dataset) -> Dataset:
+        if not self.is_fitted:
+            raise RuntimeError("Preprocessor must be fitted before calling transform().")
+
+        scaled_dataset = Dataset(feature_names=dataset.feature_names)
+        for inst in dataset:
+            scaled_feats = []
+            for i, val in enumerate(inst.features):
+                std = self.stds[i]
+                scaled_val = (val - self.means[i]) / std if std != 0 else 0.0
+                scaled_feats.append(scaled_val)
+            scaled_dataset.add(Instance(features=scaled_feats, label=inst.label, meta=inst.meta))
+
+        return scaled_dataset
