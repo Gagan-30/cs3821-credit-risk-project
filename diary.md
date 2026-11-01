@@ -16,4 +16,5 @@ Couple sentences.
 - October 18th - Classifier and KNN created. Week 2-3 Deliverables completed
 - October 22nd - CSV Parser and ZMinClassifier created. Week 3-4 Deliverables completed.
 - October 24th - Set meeting with supervisor about interim report.
+- October 25th - Start Interim report plan based on weeks 1-4 Deliverables
 - October 29th - Meeting with supervisor
