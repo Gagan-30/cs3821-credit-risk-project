@@ -18,3 +18,5 @@ Couple sentences.
 - October 24th - Set meeting with supervisor about interim report.
 - October 25th - Start Interim report plan based on weeks 1-4 Deliverables
 - October 29th - Meeting with supervisor
+- Octber 30th - Implement feedback on code and interim report based from supervisor
+- November 2nd - Start week 5-6 Deliverables
