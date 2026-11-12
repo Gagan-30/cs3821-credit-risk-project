@@ -4,6 +4,7 @@ from .classifier import Classifier
 from .knn import KNNClassifier
 from .csv_parser import CSVParser
 from .preprocessors import MinMaxScaler, ZScoreStandardizer
+from .decision_tree import DecisionTreeClassifier, TreeNode
 
 __all__ = [
     "Instance",
@@ -13,4 +14,6 @@ __all__ = [
     "CSVParser",
     "MinMaxScaler",
     "ZScoreStandardizer",
+    "DecisionTreeClassifier",
+    "TreeNode",
 ]
