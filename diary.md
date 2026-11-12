@@ -13,3 +13,10 @@ Couple sentences.
 - October 7th - Meeting went well. Told to switch from Java to Python.
 - October 8th - Rewritten Project plan and submitted.
 - October 14th - Start code
+- October 18th - Classifier and KNN created. Week 2-3 Deliverables completed
+- October 22nd - CSV Parser and ZMinClassifier created. Week 3-4 Deliverables completed.
+- October 24th - Set meeting with supervisor about interim report.
+- October 25th - Start Interim report plan based on weeks 1-4 Deliverables
+- October 29th - Meeting with supervisor
+- Octber 30th - Implement feedback on code and interim report based from supervisor
+- November 2nd - Start week 5-6 Deliverables
