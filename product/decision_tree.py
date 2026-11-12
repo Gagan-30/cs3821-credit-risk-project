@@ -169,4 +169,25 @@ class DecisionTreeClassifier(Classifier):
             right=right_child
         )
 
-    
+    def _traverse(self, node: TreeNode, instance: Instance) -> TreeNode:
+        """Traverses the tree to locate the leaf node corresponding to an Instance."""
+        if node.is_leaf:
+            return node
+        if instance.features[node.feature_idx] <= node.threshold:
+            return self._traverse(node.left, instance)
+        else:
+            return self._traverse(node.right, instance)
+
+    def predict_instance(self, instance: Instance) -> Any:
+        """Predicts class label for a single query Instance."""
+        if not self.is_fitted or self.root is None:
+            raise RuntimeError("Classifier must be fitted before calling predict_instance().")
+        leaf = self._traverse(self.root, instance)
+        return leaf.prediction
+
+    def predict_proba_instance(self, instance: Instance) -> List[float]:
+        """Returns class probability distribution for a single query Instance."""
+        if not self.is_fitted or self.root is None:
+            raise RuntimeError("Classifier must be fitted before calling predict_proba_instance().")
+        leaf = self._traverse(self.root, instance)
+        return leaf.probabilities
