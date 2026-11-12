@@ -73,3 +73,25 @@ class DecisionTreeClassifier(Classifier):
         self.classes = sorted(list(set(train_data.get_labels())))
         self.root = self._build_tree(train_data.instances, depth=0)
         self.is_fitted = True
+
+    def _calc_impurity(self, instances: List[Instance]) -> float:
+        """Calculates node impurity using Gini Index or Shannon Entropy."""
+        if not instances:
+            return 0.0
+        n = len(instances)
+        counts = Counter(inst.label for inst in instances)
+        if self.criterion == "entropy":
+            entropy = 0.0
+            for count in counts.values():
+                p = count / n
+                if p > 0:
+                    entropy -= p * math.log2(p)
+            return entropy
+        else:  # "gini"
+            gini = 1.0
+            for count in counts.values():
+                p = count / n
+                gini -= p ** 2
+            return gini
+
+    
