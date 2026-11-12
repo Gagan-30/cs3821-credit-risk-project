@@ -94,4 +94,17 @@ class DecisionTreeClassifier(Classifier):
                 gini -= p ** 2
             return gini
 
+    def _calc_probabilities(self, instances: List[Instance]) -> List[float]:
+        """Calculates class probability distribution for a subset of instances."""
+        n = len(instances)
+        if n == 0:
+            return [1.0 / len(self.classes)] * len(self.classes)
+        counts = Counter(inst.label for inst in instances)
+        return [counts.get(cls, 0) / n for cls in self.classes]
+
+    def _get_majority_label(self, instances: List[Instance]) -> Any:
+        """Determines majority label with deterministic fallback ordering."""
+        counts = Counter(inst.label for inst in instances)
+        return max(counts.keys(), key=lambda c: (counts[c], -self.classes.index(c)))
+
     
