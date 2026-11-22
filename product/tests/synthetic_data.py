@@ -6,7 +6,6 @@ from product.dataset import Dataset
 from product.instance import Instance
 from product.xls_parser import XLSParser
 
-
 def generate_linear_clusters(
     n_samples: int = 100,
     n_features: int = 2,
@@ -28,3 +27,23 @@ def generate_linear_clusters(
     rng.shuffle(instances)
     feature_names = [f"f_{i}" for i in range(n_features)]
     return Dataset(instances=instances, feature_names=feature_names)
+
+def generate_quadrant_clusters(n_samples: int = 120, seed: int = 42) -> Dataset:
+    """Generates a 2D non-linear XOR-like quadrant dataset requiring multi-level tree splits."""
+    rng = random.Random(seed)
+    instances: List[Instance] = []
+    quadrants = [
+        ((1.0, 1.0), 0),
+        ((5.0, 5.0), 0),
+        ((1.0, 5.0), 1),
+        ((5.0, 1.0), 1),
+    ]
+
+    for i in range(n_samples):
+        (cx, cy), label = quadrants[i % 4]
+        feats = [rng.gauss(cx, 0.4), rng.gauss(cy, 0.4)]
+        instances.append(Instance(features=feats, label=label))
+
+    rng.shuffle(instances)
+    return Dataset(instances=instances, feature_names=["x", "y"])
+
