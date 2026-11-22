@@ -20,3 +20,5 @@ Couple sentences.
 - October 29th - Meeting with supervisor
 - Octber 30th - Implement feedback on code and interim report based from supervisor
 - November 2nd - Start week 5-6 Deliverables
+- November 12th - Start week 6-7 Deliverables
+- November 22nd - Start week 7-8 Deliverables and find correct dataset.
