@@ -63,3 +63,29 @@ def generate_concentric_rings(n_samples: int = 120, seed: int = 42) -> Dataset:
 
     rng.shuffle(instances)
     return Dataset(instances=instances, feature_names=["x", "y"])
+
+def load_stratified_credit_sample(
+    xls_path: str = "default of credit card clients.xls",
+    n_samples: int = 300,
+    seed: int = 42,
+) -> Dataset:
+    """
+    Loads 'default of credit card clients.xls' via XLSParser and extracts a
+    deterministic stratified subset preserving the observed ~22.12% default ratio.
+    """
+    if not os.path.exists(xls_path):
+        raise FileNotFoundError(f"Credit card dataset not found at '{xls_path}'.")
+
+    full_ds = XLSParser.load_credit_card_default(xls_path)
+    rng = random.Random(seed)
+
+    zeros = [inst for inst in full_ds if inst.label == 0]
+    ones = [inst for inst in full_ds if inst.label == 1]
+
+    default_ratio = len(ones) / len(full_ds)
+    n_ones = max(1, int(round(n_samples * default_ratio)))
+    n_zeros = max(1, n_samples - n_ones)
+
+    sampled = rng.sample(zeros, min(n_zeros, len(zeros))) + rng.sample(ones, min(n_ones, len(ones)))
+    rng.shuffle(sampled)
+    return Dataset(instances=sampled, feature_names=list(full_ds.feature_names))
