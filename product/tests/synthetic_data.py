@@ -47,3 +47,19 @@ def generate_quadrant_clusters(n_samples: int = 120, seed: int = 42) -> Dataset:
     rng.shuffle(instances)
     return Dataset(instances=instances, feature_names=["x", "y"])
 
+def generate_concentric_rings(n_samples: int = 120, seed: int = 42) -> Dataset:
+    """Generates two concentric circular rings (inner = 0, outer = 1)."""
+    rng = random.Random(seed)
+    instances: List[Instance] = []
+    half = n_samples // 2
+
+    for i in range(n_samples):
+        is_outer = i >= half
+        radius = rng.uniform(4.0, 5.0) if is_outer else rng.uniform(0.5, 1.5)
+        angle = rng.uniform(0.0, 2.0 * math.pi)
+        x = radius * math.cos(angle)
+        y = radius * math.sin(angle)
+        instances.append(Instance(features=[x, y], label=1 if is_outer else 0))
+
+    rng.shuffle(instances)
+    return Dataset(instances=instances, feature_names=["x", "y"])
