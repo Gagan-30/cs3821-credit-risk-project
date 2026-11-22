@@ -74,3 +74,13 @@ class XLSParser:
             dataset.add(Instance(features=features, label=label, meta={"id": record_id}))
 
         return dataset
+
+    @staticmethod
+    def export_to_csv(dataset: Dataset, output_csv_path: str, target_name: str = "default") -> None:
+        """Exports a loaded Dataset to a standard flat CSV file compatible with CSVParser."""
+        with open(output_csv_path, mode="w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if dataset.feature_names:
+                writer.writerow(list(dataset.feature_names) + [target_name])
+            for inst in dataset:
+                writer.writerow(list(inst.features) + [inst.label])
