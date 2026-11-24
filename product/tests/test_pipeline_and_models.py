@@ -20,7 +20,6 @@ from product.tests.synthetic_data import (
 
 CREDIT_XLS_PATH = "default of credit card clients.xls"
 
-
 class TestDataPipeline(unittest.TestCase):
     """Verifies Instance, Dataset, CSVParser, XLSParser, and leakage-free preprocessors."""
 
@@ -99,4 +98,57 @@ class TestDataPipeline(unittest.TestCase):
 
         self.assertAlmostEqual(scaled[1][0], 0.0, places=6)
         self.assertAlmostEqual(scaled[0][0], -scaled[2][0], places=6)
+
+class TestKNNClassifier(unittest.TestCase):
+    """Verifies k-NN distance metrics, synthetic accuracy, tie-breaking rules, and credit card execution."""
+
+    def test_linear_and_concentric_accuracy(self):
+        for ds in (generate_linear_clusters(100, seed=7), generate_concentric_rings(100, seed=7)):
+            train, test = ds.split(0.8)
+            for metric in ("euclidean", "manhattan"):
+                knn = KNNClassifier(k=3, metric=metric)
+                knn.fit(train)
+                preds = knn.predict(test)
+                acc = sum(p == y for p, y in zip(preds, test.get_labels())) / len(test)
+                self.assertGreaterEqual(acc, 0.95)
+
+    def test_tie_breaking_strategies(self):
+        train = Dataset([
+            Instance([0.0], label=0),
+            Instance([0.1], label=0),
+            Instance([1.0], label=0),
+            Instance([1.8], label=1),
+            Instance([5.0], label=1),
+        ])
+        query = Instance([1.45])
+
+        knn_weighted = KNNClassifier(k=2, tie_breaker="distance_weighted")
+        knn_weighted.fit(train)
+        self.assertEqual(knn_weighted.predict_instance(query), 1)
+
+        knn_reduction = KNNClassifier(k=2, tie_breaker="neighbor_reduction")
+        knn_reduction.fit(train)
+        self.assertEqual(knn_reduction.predict_instance(query), 1)
+
+        knn_prior = KNNClassifier(k=2, tie_breaker="class_prior")
+        knn_prior.fit(train)
+        self.assertEqual(knn_prior.predict_instance(query), 0)
+
+    @unittest.skipUnless(os.path.exists(CREDIT_XLS_PATH), "Credit card .xls file not present")
+    def test_credit_card_toy_pipeline_knn(self):
+        ds = load_stratified_credit_sample(CREDIT_XLS_PATH, n_samples=150, seed=42)
+        train_raw, test_raw = ds.split(0.8)
+
+        scaler = ZScoreStandardizer()
+        train_scaled = scaler.fit_transform(train_raw)
+        test_scaled = scaler.transform(test_raw)
+
+        for tb in ("majority", "distance_weighted", "neighbor_reduction", "class_prior"):
+            knn = KNNClassifier(k=5, metric="euclidean", tie_breaker=tb)
+            knn.fit(train_scaled)
+            preds = knn.predict(test_scaled)
+            probas = knn.predict_proba(test_scaled)
+            self.assertEqual(len(preds), len(test_scaled))
+            self.assertTrue(all(p in (0, 1) for p in preds))
+            self.assertTrue(all(abs(sum(pr) - 1.0) < 1e-6 for pr in probas))
 
