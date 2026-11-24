@@ -52,3 +52,30 @@ class TestDataPipeline(unittest.TestCase):
             self.assertEqual(ds[1].label, 1)
         finally:
             os.remove(tmp_path)
+
+    @unittest.skipUnless(os.path.exists(CREDIT_XLS_PATH), "Credit card .xls file not present")
+    def test_xls_parser_credit_card_dataset(self):
+        ds = XLSParser.load_credit_card_default(CREDIT_XLS_PATH, clean_categories=True, rename_pay0=True)
+        self.assertEqual(len(ds), 30000)
+        self.assertEqual(ds.num_features, 23)
+        self.assertEqual(ds.feature_names[0], "LIMIT_BAL")
+        self.assertEqual(ds.feature_names[5], "PAY_1")
+        self.assertEqual(ds[0].meta["id"], 1)
+
+        edu_vals = set(ds.get_column(ds.feature_names.index("EDUCATION")))
+        mar_vals = set(ds.get_column(ds.feature_names.index("MARRIAGE")))
+        self.assertTrue(edu_vals.issubset({1.0, 2.0, 3.0, 4.0}))
+        self.assertTrue(mar_vals.issubset({1.0, 2.0, 3.0}))
+
+        subset = Dataset(ds.instances[:50], feature_names=ds.feature_names)
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as tmp:
+            tmp_path = tmp.name
+        try:
+            XLSParser.export_to_csv(subset, tmp_path)
+            reloaded = CSVParser.load(tmp_path)
+            self.assertEqual(len(reloaded), 50)
+            self.assertEqual(reloaded.num_features, 23)
+            self.assertEqual(reloaded[0].features, subset[0].features)
+            self.assertEqual(reloaded[0].label, subset[0].label)
+        finally:
+            os.remove(tmp_path)
