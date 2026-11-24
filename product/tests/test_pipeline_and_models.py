@@ -152,3 +152,41 @@ class TestKNNClassifier(unittest.TestCase):
             self.assertTrue(all(p in (0, 1) for p in preds))
             self.assertTrue(all(abs(sum(pr) - 1.0) < 1e-6 for pr in probas))
 
+class TestDecisionTreeClassifier(unittest.TestCase):
+    """Verifies Decision Tree split criteria, non-linear boundaries, depth limits, and credit card execution."""
+
+    def test_quadrant_non_linear_classification(self):
+        ds = generate_quadrant_clusters(n_samples=120, seed=11)
+        train, test = ds.split(0.8)
+
+        for criterion in ("gini", "entropy"):
+            dt = DecisionTreeClassifier(criterion=criterion, max_depth=4)
+            dt.fit(train)
+            preds = dt.predict(test)
+            acc = sum(p == y for p, y in zip(preds, test.get_labels())) / len(test)
+            self.assertGreaterEqual(acc, 0.95)
+
+    def test_stopping_criteria_max_depth(self):
+        ds = generate_quadrant_clusters(n_samples=80, seed=5)
+        dt_shallow = DecisionTreeClassifier(criterion="gini", max_depth=1)
+        dt_shallow.fit(ds)
+
+        self.assertFalse(dt_shallow.root.is_leaf)
+        self.assertTrue(dt_shallow.root.left.is_leaf)
+        self.assertTrue(dt_shallow.root.right.is_leaf)
+
+    @unittest.skipUnless(os.path.exists(CREDIT_XLS_PATH), "Credit card .xls file not present")
+    def test_credit_card_toy_pipeline_decision_tree(self):
+        ds = load_stratified_credit_sample(CREDIT_XLS_PATH, n_samples=150, seed=42)
+        train, test = ds.split(0.8)
+
+        for criterion in ("gini", "entropy"):
+            dt = DecisionTreeClassifier(criterion=criterion, max_depth=3)
+            dt.fit(train)
+            preds = dt.predict(test)
+            self.assertEqual(len(preds), len(test))
+            self.assertTrue(all(p in (0, 1) for p in preds))
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
