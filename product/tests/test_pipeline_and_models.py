@@ -38,4 +38,17 @@ class TestDataPipeline(unittest.TestCase):
         self.assertEqual(len(train_part), 1)
         self.assertEqual(len(test_part), 1)
 
-    
+    def test_csv_parser(self):
+        csv_content = "age,income,default\n25,50000,0\n40,20000,1\n"
+        with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as tmp:
+            tmp.write(csv_content)
+            tmp_path = tmp.name
+
+        try:
+            ds = CSVParser.load(tmp_path)
+            self.assertEqual(ds.feature_names, ["age", "income"])
+            self.assertEqual(len(ds), 2)
+            self.assertEqual(ds[0].features, [25.0, 50000.0])
+            self.assertEqual(ds[1].label, 1)
+        finally:
+            os.remove(tmp_path)
