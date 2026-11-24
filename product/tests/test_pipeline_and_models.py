@@ -79,3 +79,24 @@ class TestDataPipeline(unittest.TestCase):
             self.assertEqual(reloaded[0].label, subset[0].label)
         finally:
             os.remove(tmp_path)
+
+    def test_minmax_scaler_no_leakage(self):
+        train = Dataset([Instance([10.0, 100.0], 0), Instance([20.0, 200.0], 1)])
+        test = Dataset([Instance([30.0, 150.0], 1)])
+
+        scaler = MinMaxScaler()
+        scaled_train = scaler.fit_transform(train)
+        scaled_test = scaler.transform(test)
+
+        self.assertEqual(scaled_train[0].features, [0.0, 0.0])
+        self.assertEqual(scaled_train[1].features, [1.0, 1.0])
+        self.assertEqual(scaled_test[0].features, [2.0, 0.5])
+
+    def test_zscore_standardizer(self):
+        train = Dataset([Instance([10.0], 0), Instance([20.0], 1), Instance([30.0], 0)])
+        stdizer = ZScoreStandardizer()
+        scaled = stdizer.fit_transform(train)
+
+        self.assertAlmostEqual(scaled[1][0], 0.0, places=6)
+        self.assertAlmostEqual(scaled[0][0], -scaled[2][0], places=6)
+
