@@ -1,9 +1,17 @@
+import os
 import time
 import tracemalloc
 from typing import Optional, Tuple, Dict, Any, List
 from product.decision_tree import DecisionTreeClassifier, TreeNode
 from product.knn import KNNClassifier
-from product.tests.synthetic_data import generate_linear_clusters, generate_quadrant_clusters
+from product.preprocessors import ZScoreStandardizer
+from product.tests.synthetic_data import (
+    generate_linear_clusters,
+    generate_quadrant_clusters,
+    load_stratified_credit_sample,
+)
+
+CREDIT_XLS_PATH = "default of credit card clients.xls"
 
 
 def inspect_tree_structure(node: Optional[TreeNode]) -> Tuple[int, int, int]:
@@ -21,4 +29,34 @@ def inspect_tree_structure(node: Optional[TreeNode]) -> Tuple[int, int, int]:
         left_l + right_l,
     )
 
+
+def profile_decision_tree_recursion(dataset_label: str, ds) -> List[Dict[str, Any]]:
+    """Profiles Decision Tree recursion depth, node count, fit latency, and peak memory."""
+    results: List[Dict[str, Any]] = []
+
+    for criterion in ("gini", "entropy"):
+        for max_depth in (1, 2, 4, None):
+            tracemalloc.start()
+            t0 = time.perf_counter_ns()
+
+            dt = DecisionTreeClassifier(criterion=criterion, max_depth=max_depth)
+            dt.fit(ds)
+
+            elapsed_ms = (time.perf_counter_ns() - t0) / 1e6
+            _, peak_bytes = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+
+            actual_depth, total_nodes, leaf_nodes = inspect_tree_structure(dt.root)
+            results.append({
+                "dataset": dataset_label,
+                "criterion": criterion,
+                "max_depth_param": str(max_depth),
+                "actual_depth": actual_depth,
+                "total_nodes": total_nodes,
+                "leaf_nodes": leaf_nodes,
+                "fit_ms": round(elapsed_ms, 3),
+                "peak_kb": round(peak_bytes / 1024.0, 2),
+            })
+
+    return results
 
