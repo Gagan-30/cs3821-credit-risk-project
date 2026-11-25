@@ -97,3 +97,47 @@ def profile_knn_distance_scaling(
             })
 
     return results
+
+def run_all_profiles() -> None:
+    print("=== 1. DECISION TREE RECURSION & IMPURITY PROFILING ===")
+    dt_datasets = [("Synthetic_400x2", generate_quadrant_clusters(n_samples=400, seed=42))]
+    if os.path.exists(CREDIT_XLS_PATH):
+        dt_datasets.append(("CreditCard_250x23", load_stratified_credit_sample(CREDIT_XLS_PATH, n_samples=250, seed=42)))
+
+    header_dt = f"{'Dataset':<18} {'Criterion':<10} {'MaxDepth':<9} {'ActualDepth':<12} {'Nodes':<7} {'Leaves':<7} {'Fit (ms)':<10} {'Peak (KB)':<10}"
+    print(header_dt)
+    print("-" * len(header_dt))
+    for label, ds in dt_datasets:
+        for r in profile_decision_tree_recursion(label, ds):
+            print(
+                f"{r['dataset']:<18} {r['criterion']:<10} {r['max_depth_param']:<9} {r['actual_depth']:<12} "
+                f"{r['total_nodes']:<7} {r['leaf_nodes']:<7} {r['fit_ms']:<10} {r['peak_kb']:<10}"
+            )
+
+    print("\n=== 2. k-NN PAIRWISE DISTANCE & MEMORY PROFILING ===")
+    knn_groups = [
+        (
+            "Synthetic_10D",
+            [(n, generate_linear_clusters(n_samples=n, n_features=10, seed=42)) for n in (100, 500, 1000)],
+        )
+    ]
+    if os.path.exists(CREDIT_XLS_PATH):
+        knn_groups.append(
+            (
+                "CreditCard_23D",
+                [(n, load_stratified_credit_sample(CREDIT_XLS_PATH, n_samples=n, seed=42)) for n in (100, 500, 1000)],
+            )
+        )
+
+    header_knn = f"{'Dataset':<16} {'Train N':<9} {'Test N':<8} {'Metric':<11} {'Total (ms)':<12} {'Per-Query (us)':<16} {'Peak (KB)':<10}"
+    print(header_knn)
+    print("-" * len(header_knn))
+    for label, group in knn_groups:
+        for r in profile_knn_distance_scaling(label, group):
+            print(
+                f"{r['dataset']:<16} {r['n_train']:<9} {r['n_test']:<8} {r['metric']:<11} "
+                f"{r['total_ms']:<12} {r['per_query_us']:<16} {r['peak_kb']:<10}"
+            )
+
+if __name__ == "__main__":
+    run_all_profiles()
