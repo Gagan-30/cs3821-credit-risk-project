@@ -5,6 +5,11 @@ from typing import List
 from product.dataset import Dataset
 from product.instance import Instance
 from product.xls_parser import XLSParser
+from pathlib import Path
+
+DEFAULT_CREDIT_XLS_PATH = str(
+    Path(__file__).resolve().parents[1] / "datasets" / "default of credit card clients.xls"
+)
 
 def generate_linear_clusters(
     n_samples: int = 100,
@@ -65,7 +70,7 @@ def generate_concentric_rings(n_samples: int = 120, seed: int = 42) -> Dataset:
     return Dataset(instances=instances, feature_names=["x", "y"])
 
 def load_stratified_credit_sample(
-    xls_path: str = "default of credit card clients.xls",
+    xls_path: str = DEFAULT_CREDIT_XLS_PATH,
     n_samples: int = 300,
     seed: int = 42,
 ) -> Dataset:

@@ -10,9 +10,11 @@ from product.tests.synthetic_data import (
     generate_quadrant_clusters,
     load_stratified_credit_sample,
 )
+from pathlib import Path
 
-CREDIT_XLS_PATH = "default of credit card clients.xls"
-
+CREDIT_XLS_PATH = str(
+    Path(__file__).resolve().parents[1] / "datasets" / "default of credit card clients.xls"
+)
 def inspect_tree_structure(node: Optional[TreeNode]) -> Tuple[int, int, int]:
     """Returns (max_depth, total_nodes, leaf_nodes) of a fitted DecisionTree."""
     if node is None:

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import tempfile
 import unittest
 from product import (
@@ -18,8 +19,9 @@ from product.tests.synthetic_data import (
     load_stratified_credit_sample,
 )
 
-CREDIT_XLS_PATH = "default of credit card clients.xls"
-
+CREDIT_XLS_PATH = str(
+    Path(__file__).resolve().parents[1] / "datasets" / "default of credit card clients.xls"
+)
 class TestDataPipeline(unittest.TestCase):
     """Verifies Instance, Dataset, CSVParser, XLSParser, and leakage-free preprocessors."""
 
